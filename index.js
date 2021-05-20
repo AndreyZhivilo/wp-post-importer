@@ -18,6 +18,48 @@ function addNewImport(endpoint) {
   }
 }
 
+function deleteItem(endpoint) {
+  return function (id) {
+    fetch(`${this.site}/wp-json/wp/v2/${endpoint}/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+        Authorization: `Bearer ${this.token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => console.log(res))
+  }
+}
+
+function deleteAllItems(endpoint) {
+  return function () {
+    fetch(`${this.site}/wp-json/wp/v2/${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+        Authorization: `Bearer ${this.token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        const ids = res.reduce((a, element) => (a = [...a, element.id]), [])
+        ids.forEach((element) => {
+          return fetch(`${this.site}/wp-json/wp/v2/${endpoint}/${element}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              accept: 'application/json',
+              Authorization: `Bearer ${this.token}`,
+            },
+          }).then((res) => console.log(res))
+        })
+      })
+  }
+}
+
 const wpImporter = {
   site: '',
   token: '',
@@ -43,6 +85,12 @@ const wpImporter = {
   },
 
   addCategory: addNewImport('categories'),
+  addPost: addNewImport('posts'),
+  addTag: addNewImport('tags'),
+  deletePost: deleteItem('posts'),
+  deleteCategory: deleteItem('categories'),
+  deleteTag: deleteItem('tags'),
+  deleteAllPosts: deleteAllItems('posts'),
 }
 
-module.exports = wpImporter
+module.exports = { wpImporter, addNewImport, deleteItem, deleteAllItems }
