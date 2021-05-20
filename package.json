@@ -1,0 +1,14 @@
+{
+  "name": "wp-post-importer",
+  "version": "1.0.0",
+  "description": "Importing WP Posts, Custom Posts Types and taxonomies via REST API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Stargazer",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  }
+}
