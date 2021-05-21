@@ -24,14 +24,16 @@ async function createInstance(args) {
 function wpImporter(args) {
   const { site, token } = args
 
+  const headers = {
+    'Content-Type': 'application/json',
+    accept: 'application/json',
+    Authorization: `Bearer ${token}`,
+  }
+
   function importItem(args, endpoint) {
     fetch(`${site}/wp-json/wp/v2/${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers: headers,
       body: JSON.stringify({
         ...args,
       }),
@@ -49,11 +51,7 @@ function wpImporter(args) {
   function deleteItem(id, endpoint) {
     fetch(`${site}/wp-json/wp/v2/${endpoint}/${id}?force=true`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers: headers,
     })
       .then((res) => res.json())
       .then((res) => console.log(res))
@@ -70,7 +68,6 @@ function wpImporter(args) {
       .then((res) => res.json())
       .then((res) => {
         const ids = res.reduce((a, element) => (a = [...a, element.id]), [])
-        console.log(ids)
         ids.forEach((element) => {
           deleteItem(element, endpoint)
         })
