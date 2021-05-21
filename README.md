@@ -50,18 +50,18 @@ Then...
 
 # What else?
 
-In addition:
+### Creation
 
-Create new Category - newImport.addCategory(args)
-Create new Tag - newImport.addTag(args)
-Add custom post type or taxonomy - newImport.addCustomItem(args, endpoint)
+- Create new Category - newImport.addCategory(args)
+- Create new Tag - newImport.addTag(args)
+- Add custom post type or taxonomy - newImport.addCustomItem(args, endpoint)
 
----
+### Deletion
 
-Delete Post - newImport.deletePost(id)
-Delete Category - newImport.deleteCategory(id)
-Delete Tag - newImport.deleteTag(id)
-Delete custom post type or taxonomy - newImport.deleteCustomItem(id, endpoint)
-Delete all Posts - newImport.deleteAllPosts()
-Delete all Categories - newImport.deleteAllCategories()
-Delete all items of certain endpoint - newImport.deleteAllCustom(endpoint)
+- Delete Post - newImport.deletePost(id)
+- Delete Category - newImport.deleteCategory(id)
+- Delete Tag - newImport.deleteTag(id)
+- Delete custom post type or taxonomy - newImport.deleteCustomItem(id, endpoint)
+- Delete all Posts - newImport.deleteAllPosts()
+- Delete all Categories - newImport.deleteAllCategories()
+- Delete all items of certain endpoint - newImport.deleteAllCustom(endpoint)
