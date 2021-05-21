@@ -1,13 +1,36 @@
 const fetch = require('node-fetch')
 
-function addNewImport(endpoint) {
-  return function (args) {
-    fetch(`${this.site}/wp-json/wp/v2/${endpoint}`, {
+async function createInstance(args) {
+  const { site, login, password } = args
+  let token = ''
+  await fetch(`${site}/wp-json/jwt-auth/v1/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify({
+      username: login,
+      password: password,
+    }),
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      token = res.token
+    })
+  return { token, site }
+}
+
+function wpImporter(args) {
+  const { site, token } = args
+
+  function importItem(args, endpoint) {
+    fetch(`${site}/wp-json/wp/v2/${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         accept: 'application/json',
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         ...args,
@@ -16,81 +39,64 @@ function addNewImport(endpoint) {
       .then((res) => res.json())
       .then((res) => console.log(res))
   }
-}
 
-function deleteItem(endpoint) {
-  return function (id) {
-    fetch(`${this.site}/wp-json/wp/v2/${endpoint}/${id}`, {
+  function createImport(endpoint) {
+    return function (args) {
+      importItem(args, endpoint)
+    }
+  }
+
+  function deleteItem(id, endpoint) {
+    fetch(`${site}/wp-json/wp/v2/${endpoint}/${id}?force=true`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         accept: 'application/json',
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => res.json())
       .then((res) => console.log(res))
   }
-}
 
-function deleteAllItems(endpoint) {
-  return function () {
-    fetch(`${this.site}/wp-json/wp/v2/${endpoint}`, {
+  function deleteAllItems(endpoint) {
+    fetch(`${site}/wp-json/wp/v2/${endpoint}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         accept: 'application/json',
-        Authorization: `Bearer ${this.token}`,
       },
     })
       .then((res) => res.json())
       .then((res) => {
         const ids = res.reduce((a, element) => (a = [...a, element.id]), [])
+        console.log(ids)
         ids.forEach((element) => {
-          return fetch(`${this.site}/wp-json/wp/v2/${endpoint}/${element}`, {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-              accept: 'application/json',
-              Authorization: `Bearer ${this.token}`,
-            },
-          }).then((res) => console.log(res))
+          deleteItem(element, endpoint)
         })
       })
   }
+
+  function createDeletion(endpoint) {
+    return function (id) {
+      deleteItem(id, endpoint)
+    }
+  }
+
+  return {
+    ...args,
+    addPost: createImport('posts'),
+    addTag: createImport('tags'),
+    addCategory: createImport('categories'),
+    addCustomItem: importItem,
+    deleteCustomItem: deleteItem,
+    deletePost: createDeletion('posts'),
+    deleteTag: createDeletion('tags'),
+    deleteCategory: createDeletion('categories'),
+    deleteAllCustom: deleteAllItems,
+    deleteAllCategories: deleteAllItems('categories'),
+    deleteAllPosts: deleteAllItems('posts'),
+  }
 }
 
-const wpImporter = {
-  site: '',
-  token: '',
-  createInstance: async function (args) {
-    const { site, login, password } = args
-    await fetch(`${site}/wp-json/jwt-auth/v1/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-      },
-      body: JSON.stringify({
-        username: login,
-        password: password,
-      }),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        this.site = site
-        this.token = res.token
-      })
-    return this
-  },
-
-  addCategory: addNewImport('categories'),
-  addPost: addNewImport('posts'),
-  addTag: addNewImport('tags'),
-  deletePost: deleteItem('posts'),
-  deleteCategory: deleteItem('categories'),
-  deleteTag: deleteItem('tags'),
-  deleteAllPosts: deleteAllItems('posts'),
-}
-
-module.exports = { wpImporter, addNewImport, deleteItem, deleteAllItems }
+module.exports = { wpImporter, createInstance }
