@@ -9,6 +9,8 @@ This library makes easyer interactions with Wordpress REST API. You can create o
 Then...
 
 ```
+const { wpImporter, createInstance } = require('wp-post-importer')
+
 ;(async function () {
   const connection = await createInstance({
     site: 'http://wp-site.com',
